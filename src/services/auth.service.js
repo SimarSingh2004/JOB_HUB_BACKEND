@@ -1,6 +1,6 @@
-import { generateAccessAndRefreshToken } from "../utils/jwt";
-import { User } from "../models/user.model";
-import { ApiError } from "../utils/ApiError";
+import { generateAccessAndRefreshToken } from "../utils/generateAccessAndRefreshToken.js";
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const registerUserService = async (data) => {
   const { fullname, username, email, password, role } = data;
@@ -61,4 +61,14 @@ const loginUserService = async (data) => {
   };
 };
 
-export { registerUserService, loginUserService };
+const logoutUserService = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "User not found");
+
+  user.refreshToken = "";
+  await user.save({ validateBeforeSave: false });
+
+  return true;
+};
+
+export { registerUserService, loginUserService, logoutUserService };
