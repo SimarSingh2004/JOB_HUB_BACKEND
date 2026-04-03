@@ -1,6 +1,7 @@
 import {
   loginUserService,
   logoutUserService,
+  refreshAccessTokenService,
   registerUserService,
 } from "../services/auth.service.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -44,4 +45,34 @@ const logoutUserController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
-export { registerUserController, loginUserController, logoutUserController };
+const refreshAccessTokenController = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body?.refreshToken;
+
+  const { accessToken, refreshToken } =
+    await refreshAccessTokenService(incomingRefreshToken);
+
+  const options = {
+    httpOnly: true,
+    secure: false, // set to true in production
+  };
+
+  return res
+    .status(200)
+    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { accessToken },
+        "Access token refreshed successfully",
+      ),
+    );
+});
+
+export {
+  registerUserController,
+  loginUserController,
+  logoutUserController,
+  refreshAccessTokenController,
+};

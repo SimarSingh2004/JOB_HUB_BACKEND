@@ -1,6 +1,7 @@
 import { generateAccessAndRefreshToken } from "../utils/generateAccessAndRefreshToken.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import jwt from "jsonwebtoken";
 
 const registerUserService = async (data) => {
   const { fullname, username, email, password, role } = data;
@@ -71,4 +72,34 @@ const logoutUserService = async (userId) => {
   return true;
 };
 
-export { registerUserService, loginUserService, logoutUserService };
+const refreshAccessTokenService = async (incomingRefreshToken) => {
+  if (!incomingRefreshToken)
+    throw new ApiError(401, "Unauthorized: No refresh token provided");
+
+  const decodedToken = jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+  );
+  const user = await User.findById(decodedToken?.id);
+
+  if (!user) throw new ApiError(401, "Unauthorized: Invalid refresh token");
+
+  if (user.refreshToken !== incomingRefreshToken)
+    throw new ApiError(
+      401,
+      "Unauthorized: Refresh token expired or does not match",
+    );
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
+
+  return { accessToken, refreshToken };
+};
+
+export {
+  registerUserService,
+  loginUserService,
+  logoutUserService,
+  refreshAccessTokenService,
+};

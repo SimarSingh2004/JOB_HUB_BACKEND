@@ -1,8 +1,10 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-const app = express();
 import authRouter from "./routes/auth.routes.js";
+import profileRouter from "./routes/profile.routes.js";
+
+const app = express();
 
 app.use(
   cors({
@@ -18,5 +20,6 @@ app.use(cookieParser());
 
 //routes
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/profile", profileRouter);
 
 export { app };
