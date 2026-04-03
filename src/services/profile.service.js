@@ -40,4 +40,93 @@ const createRecruiterProfileService = async (userId, data) => {
   return createdProfile;
 };
 
-export { createCandidateProfileService, createRecruiterProfileService };
+const getCandidateProfileService = async (userId) => {
+  const profile = await CandidateProfile.findOne({ userId }).populate(
+    "userId",
+    "fullname email username role",
+  );
+
+  if (!profile) throw new ApiError(404, "Candidate profile not found");
+
+  return profile;
+};
+
+const getRecruiterProfileService = async (userId) => {
+  const profile = await RecruiterProfile.findOne({ userId }).populate(
+    "userId",
+    "fullname email username role",
+  );
+
+  if (!profile) throw new ApiError(404, "Recruiter profile not found");
+
+  return profile;
+};
+
+const updateCandidateProfileService = async (userId, data) => {
+  //controlled updates
+  const allowedUpdates = [
+    "bio",
+    "skills",
+    "experience",
+    "education",
+    "projects",
+    "resume",
+  ];
+
+  const updateData = {};
+
+  Object.keys(data).forEach((key) => {
+    if (allowedUpdates.includes(key)) {
+      updateData[key] = data[key];
+    }
+  });
+  const profile = await CandidateProfile.findByIdAndUpdate(
+    { userId },
+    updateData,
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  );
+
+  if (!profile) throw new ApiError(404, "Candidate profile not found");
+
+  return profile;
+};
+
+const updateRecruiterProfileService = async (userId, data) => {
+  const allowedUpdates = [
+    "companyName",
+    "companyDescription",
+    "companyWebsite",
+    "companyLogo",
+  ];
+
+  const updateData = {};
+  Object.keys(data).forEach((key) => {
+    if (allowedUpdates.includes(key)) {
+      updateData[key] = data[key];
+    }
+  });
+  const profile = await RecruiterProfile.findByIdAndUpdate(
+    { userId },
+    updateData,
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  );
+
+  if (!profile) throw new ApiError(404, "Recruiter profile not found");
+
+  return profile;
+};
+
+export {
+  createCandidateProfileService,
+  createRecruiterProfileService,
+  getCandidateProfileService,
+  getRecruiterProfileService,
+  updateCandidateProfileService,
+  updateRecruiterProfileService,
+};

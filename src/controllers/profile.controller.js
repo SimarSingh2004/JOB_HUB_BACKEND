@@ -1,6 +1,10 @@
 import {
   createCandidateProfileService,
   createRecruiterProfileService,
+  getCandidateProfileService,
+  getRecruiterProfileService,
+  updateCandidateProfileService,
+  updateRecruiterProfileService,
 } from "../services/profile.service.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -24,4 +28,33 @@ const createRecruiterProfileController = asyncHandler(async (req, res) => {
     );
 });
 
-export { createCandidateProfileController, createRecruiterProfileController };
+const getProfileController = asyncHandler(async (req, res) => {
+  let profile;
+
+  if (req.user.role === "candidate") {
+    profile = await getCandidateProfileService(req.user._id);
+  } else profile = await getRecruiterProfileService(req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, profile, "Profile retrieved successfully"));
+});
+
+const updateProfileController = asyncHandler(async (req, res) => {
+  let profile;
+
+  if (req.user.role === "candidate")
+    profile = await updateCandidateProfileService(req.user._id, req.body);
+  else profile = await updateRecruiterProfileService(req.user._id, req.body);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, profile, "Profile updated successfully"));
+});
+
+export {
+  createCandidateProfileController,
+  createRecruiterProfileController,
+  getProfileController,
+  updateProfileController,
+};

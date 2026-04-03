@@ -19,6 +19,7 @@ const recruiterProfileSchema = new Schema(
     companyWebsite: {
       type: String,
       default: "",
+      match: [/^https?:\/\//, "Invalid URL"],
     },
     companyLogo: {
       type: String,

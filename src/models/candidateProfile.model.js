@@ -11,15 +11,16 @@ const candidateProfileSchema = new Schema(
     bio: {
       type: String,
       default: "",
+      maxlength: 500,
     },
-    skills: [
-      {
-        type: String,
-      },
-    ],
+    skills: {
+      type: [String],
+      default: [],
+    },
     resume: {
       type: String,
       default: "",
+      match: [/^https?:\/\//, "Invalid URL"],
     },
     education: [
       {
