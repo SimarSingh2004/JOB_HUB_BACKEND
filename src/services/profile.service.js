@@ -80,7 +80,7 @@ const updateCandidateProfileService = async (userId, data) => {
       updateData[key] = data[key];
     }
   });
-  const profile = await CandidateProfile.findByIdAndUpdate(
+  const profile = await CandidateProfile.findOneAndUpdate(
     { userId },
     updateData,
     {
@@ -108,7 +108,7 @@ const updateRecruiterProfileService = async (userId, data) => {
       updateData[key] = data[key];
     }
   });
-  const profile = await RecruiterProfile.findByIdAndUpdate(
+  const profile = await RecruiterProfile.findOneAndUpdate(
     { userId },
     updateData,
     {
