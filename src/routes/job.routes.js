@@ -11,6 +11,6 @@ const router = Router();
 
 router.route("/").post(verifyJWT, onlyRecruiter, createJobController);
 router.route("/").get(getAllJobsController);
-router.route("/id").get(getJobByIdController);
+router.route("/:id").get(getJobByIdController);
 
 export default router;

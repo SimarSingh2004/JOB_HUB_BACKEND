@@ -17,6 +17,7 @@ const jobSchema = new Schema(
         type: String,
         lowercase: true,
         trim: true,
+        index: true,
       },
     ],
     salary: {
@@ -27,6 +28,7 @@ const jobSchema = new Schema(
       type: String,
       index: true,
       trim: true,
+      lowercase: true,
     },
     recruiter: {
       type: Schema.Types.ObjectId,

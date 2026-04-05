@@ -11,11 +11,25 @@ const createJobController = asyncHandler(async (req, res) => {
 });
 
 const getAllJobsController = asyncHandler(async (req, res) => {
-  const jobs = await getAllJobsService();
-
+  const { jobs, total, page, limit } = await getAllJobsService(req.query);
+  const totalPages = Math.ceil(total / limit);
   return res
     .status(200)
-    .json(new ApiResponse(200, jobs, "Jobs retrieved successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        {
+          jobs,
+          total,
+          page,
+          limit,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+        "Jobs retrieved successfully",
+      ),
+    );
 });
 
 const getJobByIdController = asyncHandler(async (req, res) => {
