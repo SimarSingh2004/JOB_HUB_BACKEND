@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRouter from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
+import jobRouter from "./routes/job.routes.js";
 
 const app = express();
 
@@ -21,6 +22,6 @@ app.use(cookieParser());
 //routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/profile", profileRouter);
-//app.use("/api/v1/jobs", jobRouter); later
+app.use("/api/v1/jobs", jobRouter);
 
 export { app };
