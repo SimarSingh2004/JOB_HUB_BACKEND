@@ -159,7 +159,17 @@ const updateJobService = async (jobId, data, userId) => {
 
   Object.assign(job, filteredUpdate);
 
-  await job.save();
+  try {
+    await job.save();
+  } catch (error) {
+    if (error instanceof mongoose.Error.VersionError) {
+      throw new ApiError(
+        409,
+        "Job was updated by another request. Please refresh and try again.",
+      );
+    }
+    throw error;
+  }
 
   return job;
 };

@@ -43,6 +43,7 @@ const jobSchema = new Schema(
   },
   {
     timestamps: true,
+    optimisticConcurrency: true, // to support optimistic concurrency control and prevent lost updates in concurrent scenarios. Mongoose will automatically add a version key (__v) to the document and increment it on each save. If two concurrent updates are made to the same document, Mongoose will throw a VersionError for the second update, allowing you to handle it gracefully in your application logic.
   },
 );
 
