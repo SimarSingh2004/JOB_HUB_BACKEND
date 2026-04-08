@@ -4,10 +4,7 @@ import { Job } from "../models/job.model.js";
 import { Application } from "../models/application.model.js";
 
 const applyToJobService = async (jobId, userId, userRole) => {
-  const normalizedJobId =
-    typeof jobId === "string" ? jobId.trim() : String(jobId || "");
-
-  if (!mongoose.Types.ObjectId.isValid(normalizedJobId)) {
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
     throw new ApiError(400, "Invalid job ID");
   }
 
@@ -15,7 +12,7 @@ const applyToJobService = async (jobId, userId, userRole) => {
     throw new ApiError(403, "Only candidates can apply to jobs");
   }
 
-  const job = await Job.findById(normalizedJobId);
+  const job = await Job.findById(jobId);
   if (!job) {
     throw new ApiError(404, "Job not found");
   }
@@ -30,7 +27,7 @@ const applyToJobService = async (jobId, userId, userRole) => {
 
   try {
     const application = await Application.create({
-      job: normalizedJobId,
+      job: jobId,
       candidate: userId,
     });
     return application;
@@ -40,6 +37,19 @@ const applyToJobService = async (jobId, userId, userRole) => {
     }
     throw error;
   }
+};
+
+const toApplicationResponse = (application) => {
+  const item = application.toObject
+    ? application.toObject({ virtuals: true })
+    : application;
+
+  // If the job is inactive (or missing), surface the application as expired.
+  if (!item.job || item.job.isActive === false) {
+    item.status = "expired";
+  }
+
+  return item;
 };
 
 const getMyApplicationService = async (queryParams = {}, userId) => {
@@ -87,9 +97,10 @@ const getMyApplicationService = async (queryParams = {}, userId) => {
   ]);
 
   const totalPages = Math.ceil(total / safeLimit);
+  const normalizedApplications = applications.map(toApplicationResponse);
 
   return {
-    applications: applications,
+    applications: normalizedApplications,
     total: total,
     page: safePage,
     limit: safeLimit,
@@ -134,9 +145,14 @@ const getApplicantsForJobService = async (jobId, userId, queryParams) => {
   ]);
 
   const totalPages = Math.ceil(total / safeLimit);
+  const normalizedApplicants = applications.map((application) => {
+    const item = toApplicationResponse(application);
+    if (!job.isActive) item.status = "expired";
+    return item;
+  });
 
   return {
-    applicants: applications,
+    applicants: normalizedApplicants,
     total,
     page: safePage,
     limit: safeLimit,
@@ -159,10 +175,17 @@ const updateApplicationStatusService = async (
     throw new ApiError(400, "Invalid status value");
   }
 
-  const application = await Application.findById(applicationId).populate("job");
+  const application = await Application.findById(applicationId).populate({
+    path: "job",
+    options: { includeInactive: true },
+  });
 
   if (!application) {
     throw new ApiError(404, "Application not found");
+  }
+
+  if (!application.job || application.job.isActive === false) {
+    throw new ApiError(400, "This application is expired and cannot be updated");
   }
 
   if (application.job.recruiter.toString() !== userId.toString()) {

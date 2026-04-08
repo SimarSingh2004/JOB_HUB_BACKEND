@@ -1,0 +1,78 @@
+{
+  "notes": {
+    "auth": "Use Authorization: Bearer <access_token> for protected routes.",
+    "createJobEndpoint": "POST /api/v1/jobs",
+    "updateJobEndpoint": "PATCH /api/v1/jobs/:jobId",
+    "listJobsEndpoint": "GET /api/v1/jobs",
+    "myJobsEndpoint": "GET /api/v1/jobs/me"
+  },
+  "createJobBodies": [
+    {
+      "title": "Backend Developer",
+      "description": "Build and maintain Node.js REST APIs with MongoDB.",
+      "skillsRequired": ["node.js", "express", "mongodb", "jwt"],
+      "salary": 90000,
+      "location": "new york"
+    },
+    {
+      "title": "Frontend Engineer",
+      "description": "Develop responsive React interfaces and integrate APIs.",
+      "skillsRequired": ["react", "typescript", "css", "redux"],
+      "salary": 85000,
+      "location": "san francisco"
+    },
+    {
+      "title": "Full Stack Developer",
+      "description": "Work across frontend and backend to deliver product features.",
+      "skillsRequired": ["node.js", "react", "postgres", "docker"],
+      "salary": 100000,
+      "location": "seattle"
+    }
+  ],
+  "updateJobBody": {
+    "title": "Senior Backend Developer",
+    "description": "Design scalable services, improve API performance, and mentor juniors.",
+    "skillsRequired": ["node.js", "express", "mongodb", "redis", "aws"],
+    "salary": 120000,
+    "location": "austin"
+  },
+  "listJobsQueryExamples": [
+    {
+      "description": "Default listing (active jobs only)",
+      "query": "?page=1&limit=10"
+    },
+    {
+      "description": "Search and sort",
+      "query": "?search=backend&sort=-createdAt"
+    },
+    {
+      "description": "Filter by skills and location",
+      "query": "?skills=node.js,mongodb&location=new york"
+    },
+    {
+      "description": "Include inactive jobs",
+      "query": "?includeInactive=true&page=1&limit=10"
+    }
+  ],
+  "negativeTestBodies": [
+    {
+      "description": "Missing required title",
+      "body": {
+        "description": "No title should fail validation.",
+        "skillsRequired": ["node.js"],
+        "salary": 50000,
+        "location": "boston"
+      }
+    },
+    {
+      "description": "Negative salary",
+      "body": {
+        "title": "Invalid Salary Job",
+        "description": "Salary should not be negative.",
+        "skillsRequired": ["testing"],
+        "salary": -1000,
+        "location": "chicago"
+      }
+    }
+  ]
+}

@@ -1,13 +1,17 @@
 import {
+  applyToJobService,
   getApplicantsForJobService,
   getMyApplicationService,
+  updateApplicationStatusService,
 } from "../services/application.service.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const applyToJobController = asyncHandler(async (req, res) => {
+  const jobId = req.body.jobId ?? req.body.jobID;
+
   const application = await applyToJobService(
-    req.body.jobId,
+    jobId,
     req.user._id,
     req.user.role,
   );
@@ -39,8 +43,23 @@ const getApplicantsForJobController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, data, "Applicants retrieved successfully"));
 });
 
+const updateApplicationStatusController = asyncHandler(async (req, res) => {
+  const updated = await updateApplicationStatusService(
+    req.params.id,
+    req.body.status,
+    req.user._id,
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updated, "Application status updated successfully"),
+    );
+});
+
 export {
   applyToJobController,
   getMyApplicationsController,
   getApplicantsForJobController,
+  updateApplicationStatusController,
 };

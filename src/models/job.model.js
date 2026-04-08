@@ -52,11 +52,10 @@ jobSchema.query.withInactive = function () {
   return this;
 };
 
-jobSchema.pre(/^find/, function (next) {
+jobSchema.pre(/^find/, function () {
   if (!this.getOptions().includeInactive) {
     this.where({ isActive: true });
   }
-  next();
 });
 
 export const Job = mongoose.model("Job", jobSchema);

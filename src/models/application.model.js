@@ -15,7 +15,7 @@ const applicationSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["applied", "rejected", "accepted"],
+      enum: ["applied", "rejected", "accepted", "shortlisted"],
       default: "applied",
     },
   },

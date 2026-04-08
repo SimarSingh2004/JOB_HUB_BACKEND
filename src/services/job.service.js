@@ -58,6 +58,10 @@ const getAllJobsService = async (queryParams = {}) => {
 };
 
 const getJobByIdService = async (jobId, { includeInactive = false } = {}) => {
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    throw new ApiError(400, "Invalid job ID");
+  }
+
   let query = Job.findById(jobId);
 
   if (includeInactive) {
