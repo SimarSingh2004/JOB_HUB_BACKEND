@@ -159,10 +159,18 @@ const updateApplicationStatusService = async (
     throw new ApiError(400, "Invalid status value");
   }
 
-  const application = await Application.findById(applicationId).populate("job");
+  const application = await Application.findById(applicationId).populate({
+    path: "job",
+    options: { includeInactive: true },
+  });
 
   if (!application) {
     throw new ApiError(404, "Application not found");
+  }
+
+  if (!application.job) {
+    // This can happen if the job was deleted after the application was made. We populate with includeInactive: true to still get the job details in this case, but if the job is deleted, it won't be found and we should handle that gracefully.
+    throw new ApiError(404, "Associated job not found");
   }
 
   if (application.job.recruiter.toString() !== userId.toString()) {
