@@ -86,10 +86,19 @@ const getMyApplicationService = async (queryParams = {}, userId) => {
     Application.countDocuments(filter),
   ]);
 
+  const result = applications.map((app) => {
+    const obj = app.toObject();
+
+    if (!obj.job?.isActive) {
+      obj.status = "expired";
+    }
+    return obj;
+  });
+
   const totalPages = Math.ceil(total / safeLimit);
 
   return {
-    applications: applications,
+    applications: result,
     total: total,
     page: safePage,
     limit: safeLimit,
@@ -177,6 +186,13 @@ const updateApplicationStatusService = async (
     throw new ApiError(
       403,
       "You are not authorized to update the status of this application",
+    );
+  }
+
+  if (!application.job.isActive) {
+    throw new ApiError(
+      400,
+      "This application is expired and cannot be updated",
     );
   }
 
