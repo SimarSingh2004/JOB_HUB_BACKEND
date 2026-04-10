@@ -4,11 +4,16 @@ import {
   getMyApplicationService,
   updateApplicationStatusService,
 } from "../services/application.service.js";
+import { ApiError } from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const applyToJobController = asyncHandler(async (req, res) => {
-  const jobId = req.body.jobId ?? req.body.jobID;
+  const jobId = req.body.jobId;
+
+  if (!jobId) {
+    throw new ApiError(400, "jobId is required");
+  }
 
   const application = await applyToJobService(
     jobId,
