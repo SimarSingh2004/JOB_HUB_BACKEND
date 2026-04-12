@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { Job } from "../models/job.model.js";
 import { Application } from "../models/application.model.js";
+import { Conversation } from "../models/conversation.model.js";
 
 const applyToJobService = async (jobId, userId, userRole) => {
   const normalizedJobId =
@@ -214,6 +215,17 @@ const updateApplicationStatusService = async (
 
   application.status = newStatus;
   await application.save();
+
+  if (newStatus === "rejected") {
+    await Conversation.findOneAndUpdate(
+      {
+        jobId: application.job._id,
+        candidateId: application.candidate,
+        recruiterId: application.job.recruiter,
+      },
+      { isActive: false },
+    );
+  }
 
   return application;
 };
