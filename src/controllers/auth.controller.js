@@ -64,7 +64,7 @@ const refreshAccessTokenController = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { accessToken },
+        { accessToken, refreshToken }, // Return the new refresh token in the response body as well
         "Access token refreshed successfully",
       ),
     );
