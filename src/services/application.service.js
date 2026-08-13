@@ -78,9 +78,9 @@ const getMyApplicationService = async (queryParams = {}, userId) => {
       .limit(safeLimit)
       .sort(sort)
       .populate({
-        // Populate job details in the application response along with inactive jobs to show the status of the application for those jobs
-        path: "job",
-        select: "title salary location isActive",
+        path: "job", // Application.job → Job document
+        select: "title description salary location isActive recruiter",
+        populate: { path: "recruiter", select: "fullname username email" }, // Job.recruiter → User document
         options: { includeInactive: true },
       }),
 
@@ -136,10 +136,19 @@ const getApplicantsForJobService = async (jobId, userId, queryParams) => {
   const filter = { job: jobId };
 
   const [applications, total] = await Promise.all([
-    Application.find(filter).skip(skip).limit(safeLimit).sort(sort).populate({
-      path: "candidate",
-      select: "fullname email username ",
-    }),
+    Application.find(filter)
+      .skip(skip)
+      .limit(safeLimit)
+      .sort(sort)
+      .populate({
+        path: "candidate",
+        select: "fullname email username ",
+      })
+      .populate({
+        path: "job",
+        select: "title description salary location isActive recruiter",
+        populate: { path: "recruiter", select: "fullname username email" },
+      }),
     Application.countDocuments(filter),
   ]);
 

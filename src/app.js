@@ -17,6 +17,8 @@ app.use(
   }),
 );
 
+app.set("query parser", "extended");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // data from url
 app.use(express.static("public"));

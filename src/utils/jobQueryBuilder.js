@@ -4,7 +4,8 @@ const buildJobFilter = (queryParams = {}) => {
   const filter = {};
 
   if (queryParams.location?.trim()) {
-    filter.location = queryParams.location.trim().toLowerCase();
+    const safeLocation = escapeRegex(queryParams.location.trim());
+    filter.location = { $regex: safeLocation, $options: "i" };
   }
 
   if (queryParams.salary) {

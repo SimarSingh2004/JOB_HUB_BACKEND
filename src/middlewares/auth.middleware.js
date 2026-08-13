@@ -24,3 +24,22 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Unauthorized: Invalid Access token");
   }
 });
+
+export const attachUserIfPresent = asyncHandler(async (req, res, next) => {
+  const token =
+    req.cookies?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+
+  if (!token) return next();
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await User.findById(decodedToken?.id).select(
+      "-password -refreshToken -__v -createdAt -updatedAt",
+    );
+    if (user) req.user = user;
+  } catch (error) {
+    // invalid/expired token on a public route — just proceed as anonymous
+  }
+  next();
+});

@@ -39,7 +39,7 @@ const getAllJobsController = asyncHandler(async (req, res) => {
 
 const getJobByIdController = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
-  const job = await getJobByIdService(jobId);
+  const job = await getJobByIdService(jobId, { requestingUser: req.user });
 
   return res
     .status(200)

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Job } from "../models/job.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { buildJobFilter, buildSort } from "../utils/jobQueryBuilder.js";
-
+import { Application } from "../models/application.model.js";
 const createJobService = async (data, userId) => {
   const { title, description, skillsRequired, salary, location } = data;
 
@@ -57,16 +57,16 @@ const getAllJobsService = async (queryParams = {}) => {
   };
 };
 
-const getJobByIdService = async (jobId, { includeInactive = false } = {}) => {
+const getJobByIdService = async (
+  jobId,
+  { includeInactive = false, requestingUser = null } = {},
+) => {
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
     throw new ApiError(400, "Invalid job ID");
   }
 
   let query = Job.findById(jobId);
-
-  if (includeInactive) {
-    query = query.withInactive();
-  }
+  if (includeInactive) query = query.withInactive();
 
   const job = await query.populate("recruiter", "fullname username email");
 
@@ -74,7 +74,15 @@ const getJobByIdService = async (jobId, { includeInactive = false } = {}) => {
     throw new ApiError(404, "Job not found");
   }
 
-  return job;
+  let hasApplied = false;
+  if (requestingUser?.role === "candidate") {
+    hasApplied = !!(await Application.exists({
+      job: job._id,
+      candidate: requestingUser._id,
+    }));
+  }
+
+  return { ...job.toObject(), hasApplied };
 };
 
 const getMyJobsService = async (queryParams = {}, userId) => {

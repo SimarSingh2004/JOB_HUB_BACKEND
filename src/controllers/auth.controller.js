@@ -29,7 +29,7 @@ const loginUserController = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { accessToken, user },
+        { accessToken, refreshToken, user },
         "User logged in successfully",
       ),
     );
