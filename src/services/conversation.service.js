@@ -19,7 +19,10 @@ const createOrGetConversationService = async (
     jobId,
     candidateId,
     recruiterId,
-  });
+  })
+    .populate("jobId", "title")
+    .populate("candidateId", "fullname email")
+    .populate("recruiterId", "fullname email");
 
   if (conversation) return conversation; // Conversation already exists
 
@@ -30,6 +33,15 @@ const createOrGetConversationService = async (
       candidateId,
       recruiterId,
     });
+    // .create() returns the raw doc with un-populated ObjectId refs —
+    // populate before returning, same as the "already exists" branch above,
+    // or the frontend's ConversationModel (which expects full objects for
+    // jobId/candidateId/recruiterId) fails to parse the response.
+    await conversation.populate([
+      { path: "jobId", select: "title" },
+      { path: "candidateId", select: "fullname email" },
+      { path: "recruiterId", select: "fullname email" },
+    ]);
     return conversation;
   } catch (error) {
     throw new ApiError(500, "Error creating conversation");

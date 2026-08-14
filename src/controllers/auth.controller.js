@@ -15,12 +15,15 @@ const registerUserController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, user, "User registered successfully"));
 });
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
+
 const loginUserController = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken, user } = await loginUserService(req.body);
-  const options = {
-    httpOnly: true,
-    secure: false, // set to true in production
-  };
+  const options = cookieOptions;
 
   return res
     .status(200)
@@ -36,7 +39,13 @@ const loginUserController = asyncHandler(async (req, res) => {
 });
 
 const logoutUserController = asyncHandler(async (req, res) => {
-  await logoutUserService(req.user._id);
+  // req.user may be undefined if the access token had already expired by
+  // the time logout was tapped — that's fine, logging out should always
+  // succeed. If we do have a valid user, also invalidate their stored
+  // refresh token; otherwise just clear cookies client-side.
+  if (req.user) {
+    await logoutUserService(req.user._id);
+  }
 
   return res
     .status(200)
@@ -52,10 +61,7 @@ const refreshAccessTokenController = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } =
     await refreshAccessTokenService(incomingRefreshToken);
 
-  const options = {
-    httpOnly: true,
-    secure: false, // set to true in production
-  };
+  const options = cookieOptions;
 
   return res
     .status(200)

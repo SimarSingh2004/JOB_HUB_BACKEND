@@ -5,7 +5,7 @@ import {
   refreshAccessTokenController,
   registerUserController,
 } from "../controllers/auth.controller.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { attachUserIfPresent } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
@@ -14,6 +14,6 @@ router.route("/login").post(loginUserController);
 router.route("/refresh-token").post(refreshAccessTokenController);
 
 //secured Routes
-router.route("/logout").post(verifyJWT, logoutUserController);
+router.route("/logout").post(attachUserIfPresent, logoutUserController);
 
 export default router;
