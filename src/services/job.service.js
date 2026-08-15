@@ -3,6 +3,7 @@ import { Job } from "../models/job.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { buildJobFilter, buildSort } from "../utils/jobQueryBuilder.js";
 import { Application } from "../models/application.model.js";
+import { Conversation } from "../models/conversation.model.js";
 const createJobService = async (data, userId) => {
   const { title, description, skillsRequired, salary, location } = data;
 
@@ -207,6 +208,11 @@ const deleteJobService = async (jobId, userId) => {
 
   job.isActive = false;
   await job.save();
+
+  await Conversation.updateMany(
+    { jobId: job._id },
+    { $set: { isActive: false } },
+  );
 
   return { id: jobId };
 };

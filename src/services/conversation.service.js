@@ -1,12 +1,32 @@
 import { Application } from "../models/application.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { Job } from "../models/job.model.js";
 
 const createOrGetConversationService = async (
   jobId,
   candidateId,
   recruiterId,
 ) => {
+  const job = await Job.findById(jobId).withInactive();
+
+  if (!job) {
+    throw new ApiError(404, "Job not found");
+  }
+
+  if (!job.isActive) {
+    throw new ApiError(
+      400,
+      "Job is inactive and cannot be used to start a conversation",
+    );
+  }
+
+  if (job.recruiter.toString() !== recruiterId.toString()) {
+    throw new ApiError(
+      403,
+      "You are not authorized to start a conversation for this job",
+    );
+  }
   const application = await Application.findOne({
     job: jobId,
     candidate: candidateId,
@@ -20,7 +40,11 @@ const createOrGetConversationService = async (
     candidateId,
     recruiterId,
   })
-    .populate("jobId", "title")
+    .populate({
+      path: "jobId",
+      select: "title isActive",
+      options: { includeInactive: true },
+    })
     .populate("candidateId", "fullname email")
     .populate("recruiterId", "fullname email");
 
@@ -38,7 +62,11 @@ const createOrGetConversationService = async (
     // or the frontend's ConversationModel (which expects full objects for
     // jobId/candidateId/recruiterId) fails to parse the response.
     await conversation.populate([
-      { path: "jobId", select: "title" },
+      {
+        path: "jobId",
+        select: "title isActive",
+        options: { includeInactive: true },
+      },
       { path: "candidateId", select: "fullname email" },
       { path: "recruiterId", select: "fullname email" },
     ]);
@@ -53,7 +81,11 @@ const getUserConversationsService = async (userId) => {
     $or: [{ candidateId: userId }, { recruiterId: userId }],
   })
     .sort({ lastMessageAt: -1 })
-    .populate("jobId", "title")
+    .populate({
+      path: "jobId",
+      select: "title isActive",
+      options: { includeInactive: true },
+    })
     .populate("candidateId", "fullname email")
     .populate("recruiterId", "fullname email");
 
