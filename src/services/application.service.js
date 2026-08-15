@@ -78,9 +78,10 @@ const getMyApplicationService = async (queryParams = {}, userId) => {
       .limit(safeLimit)
       .sort(sort)
       .populate({
-        path: "job", // Application.job → Job document
+        // Populate job details in the application response along with inactive jobs to show the status of the application for those jobs
+        path: "job",
         select: "title description salary location isActive recruiter",
-        populate: { path: "recruiter", select: "fullname username email" }, // Job.recruiter → User document
+        populate: { path: "recruiter", select: "fullname username email" },
         options: { includeInactive: true },
       }),
 
@@ -90,7 +91,14 @@ const getMyApplicationService = async (queryParams = {}, userId) => {
   const result = applications.map((app) => {
     const obj = app.toObject();
 
-    if (!obj.job?.isActive) {
+    // A job being deleted later shouldn't erase a real outcome. If the
+    // candidate was already accepted or rejected, that's a permanent
+    // fact about their application — preserve it. Only applications
+    // still in a non-terminal state (applied/shortlisted) become
+    // "expired" when their job disappears, since nothing was ever
+    // decided for those.
+    const isTerminal = obj.status === "accepted" || obj.status === "rejected";
+    if (!obj.job?.isActive && !isTerminal) {
       obj.status = "expired";
     }
     return obj;
